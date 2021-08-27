@@ -28,7 +28,7 @@
                     <label for="conversation-select-group">Group</label>
                     <select class="form-control recipient-select" id="conversation-select-group"
                             data-ng-model="selectedGroupId"
-                            data-ng-options="group.id as group.name group by group.groupType.description for group in conversationGroups | orderBy:[orderGroups,'name']"
+                            data-ng-options="group.id as group.name group by group.groupType.description for group in conversationGroups | orderBy:[orderGroups,'shortName']"
                             data-ng-change="selectGroup(newConversation, selectedGroupId)">
                     </select>
                 </div>
@@ -81,7 +81,7 @@
         <h3><img src="images/loading.gif" alt="Loading"/>&nbsp; Loading Recipients</h3>
     </div>
 </div>
-        
+
 <div data-ng-show="sendingMessage" class="row"><br/>
     <div class="col-md-12">
         <h3><img src="images/loading.gif" alt="Loading"/>&nbsp; Sending Message</h3>
