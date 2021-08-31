@@ -318,7 +318,7 @@ patientviewApp.run(['$rootScope', '$timeout', '$location', '$cookieStore', '$coo
                 groupTypes.GENERAL_PRACTICE = 7;
 
                 if (groupTypes[group.groupType.value]) {
-                    return groupTypes[group.groupType.value];
+                    return groupTypes[group.originalGroup || group.groupType.value];
                 }
             }
             return 0;
