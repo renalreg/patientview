@@ -5,6 +5,8 @@ var NewConversationModalInstanceCtrl = ['$scope', '$rootScope', '$modalInstance'
         var i;
 
         var init = function() {
+            var isSuperAdmin = UserService.checkRoleExists('GLOBAL_ADMIN', $rootScope.loggedInUser);
+
             delete $scope.errorMessage;
             $scope.newConversation = {};
             $scope.newConversation.recipients = [];
@@ -13,32 +15,27 @@ var NewConversationModalInstanceCtrl = ['$scope', '$rootScope', '$modalInstance'
             GroupService.getMessagingGroupsForUser($scope.loggedInUser.id).then(function(successResult) {
 
                 var myGroups = [];
-                var supportGroups = [];
-                var otherGroups = [];
 
-                // custom ordering
                 for (var i = 0; i < successResult.length; i++) {
                     var group = successResult[i];
                     if (group.code !== 'Generic') {
-                        if (group.groupType.value === 'CENTRAL_SUPPORT') {
-                            supportGroups.push(group)
-                        } else if (ConversationService.memberOfGroup(group)) {
-                            group.groupType.value = 'MY_GROUP';
-                            group.name = group.name + ' (' + group.groupType.description + ')';
-                            group.groupType.description = 'My Groups';
-                            myGroups.push(group);
-                        } else {
-                            group.groupType.value = 'OTHER_GROUP';
-                            group.name = group.name + ' (' + group.groupType.description + ')';
-                            group.groupType.description = 'Other Groups';
-                            otherGroups.push(group);
+                        if(!isSuperAdmin) {
+                            group.originalGroup = group.groupType.value;
+                            if (ConversationService.memberOfGroup(group)) {
+                                group.groupType.value = 'MY_GROUP';
+                                group.name = group.name + ' (' + group.groupType.description + ')';
+                                group.groupType.description = 'My Groups';
+                            } else {
+                                group.groupType.value = 'OTHER_GROUP';
+                                group.name = group.name + ' (' + group.groupType.description + ')';
+                                group.groupType.description = 'Other Groups';
+                            }
                         }
+                        myGroups.push(group);
                     }
                 }
 
                 $scope.conversationGroups = $scope.conversationGroups.concat(myGroups);
-                $scope.conversationGroups = $scope.conversationGroups.concat(supportGroups);
-                $scope.conversationGroups = $scope.conversationGroups.concat(otherGroups);
             }, function(failResult) {
                 $scope.errorMessage = failResult.data;
             });

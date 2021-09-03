@@ -673,7 +673,7 @@ public class InsDiaryServiceImpl extends AbstractServiceImpl<InsDiaryServiceImpl
      * @throws FhirResourceException
      */
     private Map<String, UUID> createFhirRecords(InsDiaryRecord record, User patientUser)
-            throws ResourceNotFoundException, FhirResourceException {
+            throws ResourceNotFoundException, FhirResourceException, ResourceInvalidException {
 
         List<UserResultCluster> userResultClusters = new ArrayList<>();
 
