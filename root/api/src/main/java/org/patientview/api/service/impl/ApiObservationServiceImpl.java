@@ -220,6 +220,8 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
 
         Map<String, UUID> resourceMapIds = new HashMap<>();
 
+        // validate user input against min/max if any
+
         // Patient adds his own results
         User patientUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User does not exist"));
@@ -254,6 +256,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                 ObservationHeading observationHeading = observationHeadingRepository.findById(idValue.getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Observation Heading not found"));
 
+                // validate
                 if (!idValue.getValue().isEmpty()) {
                     fhirObservations.add(observationService.buildObservation(applies, idValue.getValue(), null,
                             userResultCluster.getComments(), observationHeading, true));
@@ -334,6 +337,8 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
     @Override
     public void addUserDialysisTreatmentResult(Long userId, Map<String, String> resultClusterMap)
             throws ResourceNotFoundException, FhirResourceException, ResourceInvalidException {
+
+        // validate user input against min/max if any
 
         // Patient adds his own results
         User patientUser = userRepository.findById(userId)
