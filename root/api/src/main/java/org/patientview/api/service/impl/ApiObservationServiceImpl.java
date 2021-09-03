@@ -50,7 +50,6 @@ import org.patientview.persistence.model.enums.RoleName;
 import org.patientview.persistence.repository.AlertRepository;
 import org.patientview.persistence.repository.GroupRepository;
 import org.patientview.persistence.repository.IdentifierRepository;
-import org.patientview.persistence.repository.LookupRepository;
 import org.patientview.persistence.repository.ObservationHeadingRepository;
 import org.patientview.persistence.repository.UserRepository;
 import org.patientview.persistence.resource.FhirResource;
@@ -98,42 +97,6 @@ import static org.patientview.api.util.ApiUtil.getCurrentUser;
 public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservationServiceImpl>
         implements ApiObservationService {
 
-    @Inject
-    private AlertRepository alertRepository;
-
-    @Inject
-    private AuditService auditService;
-
-    @Inject
-    private FhirResource fhirResource;
-
-    @Inject
-    private FhirLinkService fhirLinkService;
-
-    @Inject
-    private GroupRepository groupRepository;
-
-    @Inject
-    private GroupService groupService;
-
-    @Inject
-    private IdentifierRepository identifierRepository;
-
-    @Inject
-    private ObservationService observationService;
-
-    @Inject
-    private ObservationHeadingRepository observationHeadingRepository;
-
-    @Inject
-    private PatientService patientService;
-
-    @Inject
-    private UserRepository userRepository;
-
-    @Inject
-    private UserService userService;
-
     private static final Logger LOG = LoggerFactory.getLogger(ApiObservationServiceImpl.class);
     private static final String COMMENT_RESULT_HEADING = "resultcomment";
     private static final String COMMENT_PRE = "PRE";
@@ -142,6 +105,30 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
     private static final int FOUR = 4;
     private static final int FIVE = 5;
     private static final int EIGHT = 8;
+    @Inject
+    private AlertRepository alertRepository;
+    @Inject
+    private AuditService auditService;
+    @Inject
+    private FhirResource fhirResource;
+    @Inject
+    private FhirLinkService fhirLinkService;
+    @Inject
+    private GroupRepository groupRepository;
+    @Inject
+    private GroupService groupService;
+    @Inject
+    private IdentifierRepository identifierRepository;
+    @Inject
+    private ObservationService observationService;
+    @Inject
+    private ObservationHeadingRepository observationHeadingRepository;
+    @Inject
+    private PatientService patientService;
+    @Inject
+    private UserRepository userRepository;
+    @Inject
+    private UserService userService;
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
@@ -216,7 +203,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public Map<String, UUID> addUserResultClusters(Long userId, List<UserResultCluster> userResultClusters)
-            throws ResourceNotFoundException, FhirResourceException {
+            throws ResourceNotFoundException, FhirResourceException, ResourceInvalidException {
 
         Map<String, UUID> resourceMapIds = new HashMap<>();
 
@@ -258,6 +245,10 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
 
                 // validate
                 if (!idValue.getValue().isEmpty()) {
+
+                    // validate input for any min/max range
+                    validateResult(observationHeading, idValue.getValue());
+
                     fhirObservations.add(observationService.buildObservation(applies, idValue.getValue(), null,
                             userResultCluster.getComments(), observationHeading, true));
                 }
@@ -424,6 +415,9 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                 throw new ResourceNotFoundException("Observation Heading not found for code " + code);
             }
 
+            // validate input for any min/max range
+            validateResult(observationHeading, value);
+
             // now build fhir observation
             fhirObservations.add(observationService.buildObservation(applies, value, null,
                     comments, observationHeading, false));
@@ -491,7 +485,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
     @Override
     public void updatePatientEnteredResult(Long userId, Long adminId,
                                            org.patientview.api.model.FhirObservation enteredResult)
-            throws ResourceNotFoundException, FhirResourceException {
+            throws ResourceNotFoundException, FhirResourceException, ResourceInvalidException {
 
         // TODO: connection leak detected
         // Patient updates his own results
@@ -538,6 +532,14 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
         if (observation == null) {
             throw new ResourceNotFoundException("Could not find observation.");
         }
+
+        // validate input for any min/max range
+        ObservationHeading observationHeading = observationHeadingRepository.findOneByCode(enteredResult.getName());
+        if (observationHeading == null) {
+            throw new ResourceNotFoundException("Observation Heading not found for code ");
+        }
+        validateResult(observationHeading, enteredResult.getValue());
+
         Observation updatedObservation = observationService.copyObservation(observation, enteredResult.getApplies(),
                 enteredResult.getValue());
 
@@ -2019,5 +2021,39 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
 
         return headingList;
     }
+
+    /**
+     * Helper to validate patient entered result value against the Observation heading validation criteria.
+     *
+     * @param heading ObservationHeading to check min/max values
+     * @param value   a input to validate
+     * @throws ResourceInvalidException
+     */
+    private void validateResult(ObservationHeading heading, String value) throws ResourceInvalidException {
+        if (StringUtils.isNotEmpty(value) &&
+                (heading.getMinValue() != null || heading.getMaxValue() != null)) {
+            try {
+                double doubleValue = Double.parseDouble(value);
+                String minValue = heading.getMinValue() != null ? heading.getMinValue().toString() : "";
+                String maxValue = heading.getMaxValue() != null ? heading.getMaxValue().toString() : "";
+
+                if (heading.getMinValue() != null && doubleValue < heading.getMinValue()) {
+                    throw new ResourceInvalidException(
+                            String.format("The entered value for %s(%s) is outside of the allowable range %s - %s. " +
+                                            "Please update and try again.", heading.getHeading(), heading.getUnits(),
+                                    minValue, maxValue));
+                }
+
+                if (heading.getMaxValue() != null && doubleValue > heading.getMaxValue()) {
+                    throw new ResourceInvalidException(
+                            String.format("The entered value for %s(%s) is outside of the allowable range %s - %s. " +
+                                            "Please update and try again.", heading.getHeading(), heading.getUnits(),
+                                    minValue, maxValue));
+                }
+            } catch (NumberFormatException e) {
+            }
+        }
+    }
+
 
 }
