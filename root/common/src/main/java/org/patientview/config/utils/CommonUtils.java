@@ -7,6 +7,8 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.patientview.persistence.model.enums.IdentifierTypes;
 
 import java.math.BigInteger;
@@ -88,6 +90,26 @@ public final class CommonUtils {
 
         return input.replace("'","''");
     }
+
+    /**
+     * Helper to strip any trailing characters and sanitize given input.
+     *
+     * @param input a value to cleanup
+     * @return a cleaned up value
+     */
+    public static String cleanup(String input) {
+        if (input == null) {
+            return null;
+        }
+
+        input = input.trim();
+
+        if (StringUtils.isEmpty(input)) {
+            return "";
+        }
+        return StringUtils.isNotEmpty(input) ? Jsoup.clean(input, Whitelist.relaxed()) : "";
+    }
+
 
     public static String generateSalt() throws NoSuchAlgorithmException {
         SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
