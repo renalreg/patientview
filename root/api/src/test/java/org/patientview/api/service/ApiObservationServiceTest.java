@@ -419,7 +419,7 @@ public class ApiObservationServiceTest {
 
     @Test
     public void testUpdatePatientEnteredResult()
-            throws ResourceNotFoundException, ResourceForbiddenException, FhirResourceException {
+            throws ResourceNotFoundException, ResourceForbiddenException, FhirResourceException, ResourceInvalidException {
         UUID uuid = UUID.randomUUID();
         Group group = TestUtils.createGroup("PATIENT_ENTERED");
         Role patientRole = TestUtils.createRole(RoleName.PATIENT);

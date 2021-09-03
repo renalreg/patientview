@@ -37,6 +37,12 @@ public class ObservationHeading extends AuditModel {
     @Column(name = "max_graph", columnDefinition="numeric", precision=19, scale=2)
     private Double maxGraph;
 
+    @Column(name = "min_value", columnDefinition="numeric", precision=19, scale=2)
+    private Double minValue;
+
+    @Column(name = "max_value", columnDefinition="numeric", precision=19, scale=2)
+    private Double maxValue;
+
     @Column(name = "info_link")
     private String infoLink;
 
@@ -123,6 +129,22 @@ public class ObservationHeading extends AuditModel {
 
     public void setMaxGraph(Double maxGraph) {
         this.maxGraph = maxGraph;
+    }
+
+    public Double getMinValue() {
+        return minValue;
+    }
+
+    public void setMinValue(Double minValue) {
+        this.minValue = minValue;
+    }
+
+    public Double getMaxValue() {
+        return maxValue;
+    }
+
+    public void setMaxValue(Double maxValue) {
+        this.maxValue = maxValue;
     }
 
     public String getInfoLink() {

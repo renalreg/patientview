@@ -337,6 +337,9 @@ public class ObservationServiceImpl extends AbstractServiceImpl<ObservationServi
 
         if (StringUtils.isNotEmpty(value)) {
             try {
+                // sanitize and trim input value
+                value = CommonUtils.cleanup(value);
+
                 // need a quick fix, as allowed to save comment as Quantity if numeric
                 if (OBSERVATION_HEADER_COMMENT_CODE.equals(observationHeading.getCode())) {
                     CodeableConcept comment = new CodeableConcept();
@@ -391,6 +394,8 @@ public class ObservationServiceImpl extends AbstractServiceImpl<ObservationServi
 
         if (StringUtils.isNotEmpty(value)) {
             try {
+                // sanitize and trim input value
+                value = CommonUtils.cleanup(value);
 
                 if (observation.getValue().getClass().equals(Quantity.class)) {
                     // quantity value

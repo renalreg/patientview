@@ -80,8 +80,8 @@ function ($scope, ObservationService, ObservationHeadingService, UtilService) {
             $scope.successMessage = 'Results successfully sent to PatientView. If required, more results can be added below.';
             $scope.userResultClusters = [];
             $scope.dialysis = false;
-        }, function () {
-            alert('Cannot save your results');
+        }, function (err) {
+            alert('Failed to save results: ' + err.data);
         });
     };
 

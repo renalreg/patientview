@@ -80,6 +80,7 @@ public class ObservationController extends BaseController<ObservationController>
      * @param userResultClusters List of UserResultCluster objects used to represent a number of user entered results
      * @throws ResourceNotFoundException
      * @throws FhirResourceException
+     * @throws ResourceInvalidException
      */
     @ExcludeFromApiDoc
     @RequestMapping(value = "/user/{userId}/observations/resultclusters", method = RequestMethod.POST
@@ -87,7 +88,7 @@ public class ObservationController extends BaseController<ObservationController>
     @ResponseBody
     public void addResultClusters(@PathVariable("userId") Long userId,
                                   @RequestBody List<UserResultCluster> userResultClusters)
-            throws ResourceNotFoundException, FhirResourceException {
+            throws ResourceNotFoundException, FhirResourceException, ResourceInvalidException {
         apiObservationService.addUserResultClusters(userId, userResultClusters);
     }
 
@@ -181,6 +182,7 @@ public class ObservationController extends BaseController<ObservationController>
      * @param enteredResult a patient entered result to updated
      * @throws ResourceNotFoundException
      * @throws FhirResourceException
+     * @throws ResourceInvalidException
      */
     @ExcludeFromApiDoc
     @RequestMapping(value = "/user/{userId}/observations/patiententered/", method = RequestMethod.POST,
@@ -189,7 +191,7 @@ public class ObservationController extends BaseController<ObservationController>
     public void updatePatientEnteredResult(@PathVariable("userId") Long userId,
                                           @RequestParam(required = false) Long adminId,
                                     @RequestBody FhirObservation enteredResult)
-            throws ResourceNotFoundException, FhirResourceException {
+            throws ResourceNotFoundException, FhirResourceException, ResourceInvalidException {
 
         if (adminId == null || adminId == -1) {
             adminId = null;
