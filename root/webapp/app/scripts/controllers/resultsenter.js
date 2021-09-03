@@ -13,6 +13,12 @@ function ($scope, ObservationService, ObservationHeadingService, UtilService) {
         return placeholder;
     };
 
+    $scope.getRangePlaceholder = function(observationHeading) {
+        if (observationHeading.minValue && observationHeading.maxValue) {
+            return observationHeading.minValue + ' - ' + observationHeading.maxValue;
+        }
+    };
+
     $scope.addResultCluster = function(resultCluster) {
         if (resultCluster !== undefined) {
 

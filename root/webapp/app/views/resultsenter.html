@@ -85,7 +85,7 @@
                         <span data-ng-repeat="clusterObservation in userResultCluster.resultCluster.resultClusterObservationHeadings" class="results-enter">
                             <span>{{getObservationHeadingPlaceholder(clusterObservation.observationHeading)}}: </span>
                             <input type="text" data-ng-model="userResultCluster.values[clusterObservation.observationHeading.id]"
-                                class="form-control input-value" only-num-decimal/>
+                                class="form-control input-value" only-num-decimal placeholder="{{getRangePlaceholder(clusterObservation.observationHeading)}}"/>
                         </span>
                     </div>
                 </div>
