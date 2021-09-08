@@ -429,6 +429,13 @@ public class ApiObservationServiceTest {
         patient.setFhirLinks(new HashSet<FhirLink>());
         TestUtils.authenticateTest(patient, patient.getGroupRoles());
 
+        ObservationHeading observationHeading1 = new ObservationHeading();
+        observationHeading1.setId(3L);
+        observationHeading1.setCode("weight");
+
+        List<ObservationHeading> observationHeadings = new ArrayList<>();
+        observationHeadings.add(observationHeading1);
+
         FhirLink fhirLink = new FhirLink();
         fhirLink.setUser(patient);
         fhirLink.setGroup(group);
@@ -473,8 +480,9 @@ public class ApiObservationServiceTest {
         when(fhirResource.getLogicalIdsBySubjectId(any(String.class), eq(fhirLink.getResourceId())))
                 .thenReturn(foundIds);
         when(fhirResource.get(eq(uuid), eq(ResourceType.Observation))).thenReturn(observation);
+        when(observationHeadingRepository.findOneByCode(any(String.class))).thenReturn(observationHeading1);
         when(observationService.copyObservation(eq(observation), eq(fhirObservation.getApplies()),
-                eq(fhirObservation.getValue()))).thenReturn(observation);
+                eq(fhirObservation.getValue()), eq(observationHeading1))).thenReturn(observation);
 
         apiObservationService.updatePatientEnteredResult(patient.getId(), null, fhirObservation);
 
