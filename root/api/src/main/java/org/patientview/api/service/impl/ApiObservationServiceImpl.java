@@ -541,7 +541,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
         validateResult(observationHeading, enteredResult.getValue());
 
         Observation updatedObservation = observationService.copyObservation(observation, enteredResult.getApplies(),
-                enteredResult.getValue());
+                enteredResult.getValue(), observationHeading);
 
         fhirResource.updateEntity(updatedObservation, ResourceType.Observation.getPath(),
                 ResourceType.Observation.getPath(), enteredResult.getLogicalId());
@@ -771,7 +771,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                             if (decimalPlaces != null) {
                                 fhirObservation.setValue(
                                         new BigDecimal(fhirObservation.getValue()).setScale(decimalPlaces.intValue(),
-                                                BigDecimal.ROUND_HALF_UP).toString());
+                                                BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toPlainString());
                             } else {
                                 fhirObservation.setValue(
                                         new DecimalFormat("0.#####")
@@ -870,7 +870,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                                         if (observationHeading.getDecimalPlaces() != null) {
                                             fhirObservation.setValue(new BigDecimal(json[3]).setScale(
                                                     observationHeading.getDecimalPlaces().intValue(),
-                                                    BigDecimal.ROUND_HALF_UP).toString());
+                                                    BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toPlainString());
                                         } else {
                                             fhirObservation.setValue(
                                                     new DecimalFormat("0.#####").format(Double.valueOf(json[3])));
@@ -1017,7 +1017,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                                             if (observationHeading.getDecimalPlaces() != null) {
                                                 fhirObservation.setValue(new BigDecimal(json[3]).setScale(
                                                         observationHeading.getDecimalPlaces().intValue(),
-                                                        BigDecimal.ROUND_HALF_UP).toString());
+                                                        BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toPlainString());
                                             } else {
                                                 fhirObservation.setValue(
                                                         new DecimalFormat("0.#####").format(Double.valueOf(json[3])));
@@ -1175,7 +1175,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                                         if (observationHeading.getDecimalPlaces() != null) {
                                             fhirObservation.setValue(new BigDecimal(json[2]).setScale(
                                                     observationHeading.getDecimalPlaces().intValue(),
-                                                    BigDecimal.ROUND_HALF_UP).toString());
+                                                    BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toPlainString());
                                         } else {
                                             fhirObservation.setValue(
                                                     new DecimalFormat("0.#####").format(Double.valueOf(json[2])));
@@ -1308,7 +1308,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                         if (observationHeading.getDecimalPlaces() != null) {
                             fhirObservation.setValue(new BigDecimal(fhirObservation.getValue()).setScale(
                                     observationHeading.getDecimalPlaces().intValue(),
-                                    BigDecimal.ROUND_HALF_UP).toString());
+                                    BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toPlainString());
                         } else {
                             fhirObservation.setValue(
                                     new DecimalFormat("0.#####").format(Double.valueOf(fhirObservation.getValue())));
@@ -1467,7 +1467,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                         if (observationHeading.getDecimalPlaces() != null) {
                             fhirObservation.setValue(new BigDecimal(fhirObservation.getValue()).setScale(
                                     observationHeading.getDecimalPlaces().intValue(),
-                                    BigDecimal.ROUND_HALF_UP).toString());
+                                    BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toPlainString());
                         } else {
                             fhirObservation.setValue(
                                     new DecimalFormat("0.#####").format(Double.valueOf(fhirObservation.getValue())));
@@ -1953,7 +1953,7 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                                         if (observationHeading.getDecimalPlaces() != null) {
                                             fhirObservation.setValue(new BigDecimal(json[2]).setScale(
                                                     observationHeading.getDecimalPlaces().intValue(),
-                                                    BigDecimal.ROUND_HALF_UP).toString());
+                                                    BigDecimal.ROUND_HALF_UP).stripTrailingZeros().toPlainString());
                                         } else {
                                             fhirObservation.setValue(
                                                     new DecimalFormat("0.#####").format(Double.valueOf(json[2])));
@@ -2032,11 +2032,11 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
     private void validateResult(ObservationHeading heading, String value) throws ResourceInvalidException {
         if (StringUtils.isNotEmpty(value) &&
                 (heading.getMinValue() != null || heading.getMaxValue() != null)) {
+            String minValue = heading.getMinValue() != null ? heading.getMinValue().toString() : "";
+            String maxValue = heading.getMaxValue() != null ? heading.getMaxValue().toString() : "";
+
             try {
                 double doubleValue = Double.parseDouble(value);
-                String minValue = heading.getMinValue() != null ? heading.getMinValue().toString() : "";
-                String maxValue = heading.getMaxValue() != null ? heading.getMaxValue().toString() : "";
-
                 if (heading.getMinValue() != null && doubleValue < heading.getMinValue()) {
                     throw new ResourceInvalidException(
                             String.format("The entered value for %s(%s) is outside of the allowable range %s - %s. " +
@@ -2051,6 +2051,10 @@ public class ApiObservationServiceImpl extends AbstractServiceImpl<ApiObservatio
                                     minValue, maxValue));
                 }
             } catch (NumberFormatException e) {
+                throw new ResourceInvalidException(
+                        String.format("The entered value for %s(%s) is outside of the allowable range %s - %s. " +
+                                        "Please update and try again.", heading.getHeading(), heading.getUnits(),
+                                minValue, maxValue));
             }
         }
     }
