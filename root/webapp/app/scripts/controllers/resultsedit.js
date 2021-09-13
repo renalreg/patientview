@@ -46,7 +46,7 @@ angular.module('patientviewApp').controller('ResultsEditCtrl', ['$scope', '$root
             });
         };
         $scope.getDialysisResults = function () {
-            var results = [];         
+            var results = [];
             var promises = [];
             var obs = [];
 
@@ -65,13 +65,13 @@ angular.module('patientviewApp').controller('ResultsEditCtrl', ['$scope', '$root
             $q.all(promises).then(function () {
                 $scope.observations = obs;
                 $scope.loading = false;
-               
+
                     for (var i = 0; i < results.length; i++) {
                         var observation = results[i];
                         observation.appliesFormatted = $filter('date')(observation.applies, 'dd-MMM-yyyy HH:mm');
                         observation.appliesFormatted = observation.appliesFormatted.replace(' 00:00', '');
                         $scope.dialysisResults.push(observation);
-                    }  
+                    }
             });
         };
 
@@ -261,8 +261,8 @@ angular.module('patientviewApp').controller('ResultsEditCtrl', ['$scope', '$root
                 }
 
                 $scope.getObservations();
-            }, function () {
-                alert('Cannot save your result');
+            }, function (err) {
+                alert('Cannot save your result: ' + err.data);
             });
         };
 

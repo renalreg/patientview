@@ -51,11 +51,12 @@ public interface ApiObservationService {
      * @param userResultClusters List of UserResultCluster objects used to represent a number of user entered results
      * @throws ResourceNotFoundException
      * @throws FhirResourceException
+     * @throws ResourceInvalidException
      */
     @UserOnly
     @RoleOnly(roles = { RoleName.PATIENT })
     Map<String, UUID> addUserResultClusters(Long userId, List<UserResultCluster> userResultClusters)
-            throws ResourceNotFoundException, FhirResourceException;
+            throws ResourceNotFoundException, FhirResourceException, ResourceInvalidException;
 
     /**
      * Custom implementation to handle entering own results for Dialysis Treatment results.
@@ -87,7 +88,7 @@ public interface ApiObservationService {
     @UserOnly
     @RoleOnly(roles = { RoleName.PATIENT })
     void updatePatientEnteredResult(Long userId, Long adminId, FhirObservation enteredResult)
-            throws ResourceNotFoundException, FhirResourceException;
+            throws ResourceNotFoundException, FhirResourceException, ResourceInvalidException;
 
     /**
      * Used when Users wants to delete their own results on the Edit Own Results page, takes a uuid and

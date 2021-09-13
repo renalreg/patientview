@@ -81,7 +81,7 @@
                     </p>
                 </div>
                 <div data-ng-show="!observation.editLoading">
-                    <form name="resultForm" class="edit-code">
+                    <form ng-if="observation.showEdit" name="resultForm" class="edit-code">
                         <div data-ng-include src="'views/partials/resultdetails.html'" data-ng-controller="ResultsEditCtrl"></div>
                     </form>
                     <div class="panel-body-footer">

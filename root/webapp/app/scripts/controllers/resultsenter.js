@@ -13,6 +13,12 @@ function ($scope, ObservationService, ObservationHeadingService, UtilService) {
         return placeholder;
     };
 
+    $scope.getRangePlaceholder = function(observationHeading) {
+        if (observationHeading.minValue && observationHeading.maxValue) {
+            return observationHeading.minValue + ' - ' + observationHeading.maxValue;
+        }
+    };
+
     $scope.addResultCluster = function(resultCluster) {
         if (resultCluster !== undefined) {
 
@@ -80,8 +86,8 @@ function ($scope, ObservationService, ObservationHeadingService, UtilService) {
             $scope.successMessage = 'Results successfully sent to PatientView. If required, more results can be added below.';
             $scope.userResultClusters = [];
             $scope.dialysis = false;
-        }, function () {
-            alert('Cannot save your results');
+        }, function (err) {
+            alert('Failed to save results: ' + err.data);
         });
     };
 
