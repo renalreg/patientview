@@ -18,7 +18,6 @@
     "jquery-htmlclean": "~1.4.0",
     "angulartics": "git://github.com/SolidStateGroup/angulartics.git#patientview",
     "angular-bindonce": "~0.3.3",
-    "fastclick": "~1.0.6",
     "angular-file-upload": "~1.1.5",
     "selectize": "~0.12.0",
     "ng-debounce": "~0.1.7",

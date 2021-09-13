@@ -48,6 +48,13 @@ Note that migration is a one time task from PV1 and is not required to set up PV
 Front-end
 ========
 
+Preinstall 
+
+```
+npm i grunt -g
+npm i bower -g
+```
+
 To start front end, from the project directory
 
 ```sh

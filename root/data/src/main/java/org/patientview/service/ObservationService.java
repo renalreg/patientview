@@ -8,8 +8,6 @@ import org.patientview.persistence.model.FhirDatabaseObservation;
 import org.patientview.persistence.model.FhirLink;
 import org.patientview.persistence.model.FhirObservation;
 import org.patientview.persistence.model.ObservationHeading;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -39,10 +37,12 @@ public interface ObservationService {
      * @param observation
      * @param applies
      * @param value
+     * @param observationHeading
      * @return a new copied over observation with changes applied
      * @throws FhirResourceException
      */
-    Observation copyObservation(Observation observation, Date applies, String value) throws FhirResourceException;
+    Observation copyObservation(Observation observation, Date applies, String value,
+                                ObservationHeading observationHeading) throws FhirResourceException;
 
     /**
      * Delete all Observations from FHIR given a Set of FhirLink, used when deleting a patient and in migration.
