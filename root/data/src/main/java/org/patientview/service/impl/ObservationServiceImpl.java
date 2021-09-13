@@ -68,22 +68,17 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class ObservationServiceImpl extends AbstractServiceImpl<ObservationService> implements ObservationService {
 
+    private static final String OBSERVATION_HEADER_COMMENT_CODE = "resultcomment";
     @Inject
     private AlertRepository alertRepository;
-
     @Inject
     @Named("fhir")
     private HikariDataSource dataSource;
-
     @Inject
     private FhirResource fhirResource;
-
     @Inject
     private IdentifierRepository identifierRepository;
-
     private String nhsno;
-
-    private static final String OBSERVATION_HEADER_COMMENT_CODE = "resultcomment";
 
     /**
      * Creates all of the FHIR observation records from the Patientview object. Links then to the PatientReference
@@ -286,10 +281,10 @@ public class ObservationServiceImpl extends AbstractServiceImpl<ObservationServi
         if (StringUtils.isNotEmpty(fhirObservation.getValue())) {
             try {
                 Quantity quantity = new Quantity();
-                quantity.setValue(createDecimal(fhirObservation.getValue()));
+                quantity.setValue(createDecimal(fhirObservation.getValue(), null));
                 quantity.setComparatorSimple(getComparator(fhirObservation.getComparator()));
                 observation.setValue(quantity);
-            } catch (ParseException pe) {
+            } catch (NumberFormatException pe) {
                 // parse exception, likely to be a string, e.g. comments store as text
                 CodeableConcept comment = new CodeableConcept();
                 comment.setTextSimple(fhirObservation.getValue());
@@ -349,12 +344,12 @@ public class ObservationServiceImpl extends AbstractServiceImpl<ObservationServi
 
                 } else {
                     Quantity quantity = new Quantity();
-                    quantity.setValue(createDecimal(value));
+                    quantity.setValue(createDecimal(value, observationHeading));
                     quantity.setComparatorSimple(getComparator(comparator));
                     quantity.setUnitsSimple(observationHeading.getUnits());
                     observation.setValue(quantity);
                 }
-            } catch (ParseException pe) {
+            } catch (NumberFormatException pe) {
                 // parse exception, likely to be a string, e.g. comments store as text
                 CodeableConcept comment = new CodeableConcept();
                 comment.setTextSimple(value);
@@ -371,6 +366,7 @@ public class ObservationServiceImpl extends AbstractServiceImpl<ObservationServi
         observation.setIdentifier(createIdentifier(observationHeading.getCode()));
 
         if (StringUtils.isNotEmpty(comments)) {
+            comments = CommonUtils.cleanup(comments);
             observation.setCommentsSimple(comments);
         }
 
@@ -378,7 +374,7 @@ public class ObservationServiceImpl extends AbstractServiceImpl<ObservationServi
     }
 
     @Override
-    public Observation copyObservation(Observation observation, Date applies, String value)
+    public Observation copyObservation(Observation observation, Date applies, String value, ObservationHeading observationHeading)
             throws FhirResourceException {
 
         Observation newObservation = observation.copy();
@@ -400,7 +396,7 @@ public class ObservationServiceImpl extends AbstractServiceImpl<ObservationServi
                 if (observation.getValue().getClass().equals(Quantity.class)) {
                     // quantity value
                     Quantity quantity = (Quantity) newObservation.getValue();
-                    quantity.setValue(createDecimal(value));
+                    quantity.setValue(createDecimal(value, observationHeading));
                     newObservation.setValue(quantity);
                 } else if (observation.getValue().getClass().equals(CodeableConcept.class)) {
                     // comment text
@@ -411,7 +407,7 @@ public class ObservationServiceImpl extends AbstractServiceImpl<ObservationServi
                 } else {
                     throw new FhirResourceException("Cannot convert FHIR observation, unknown Value type");
                 }
-            } catch (ParseException pe) {
+            } catch (NumberFormatException pe) {
                 throw new FhirResourceException("Cannot convert FHIR observation, invalid quantity");
             }
         }
@@ -426,21 +422,29 @@ public class ObservationServiceImpl extends AbstractServiceImpl<ObservationServi
         return calendar.getTime();
     }
 
-    private Decimal createDecimal(String result) throws ParseException {
+    private Decimal createDecimal(String result, ObservationHeading observationHeading) throws NumberFormatException {
         Decimal decimal = new Decimal();
 
         // remove all but numeric and . -
         String resultString = result.replaceAll("/[^\\d.-]+/", "");
 
-        // attempt to parse remaining
-        NumberFormat decimalFormat = DecimalFormat.getInstance();
-
         try {
             if (StringUtils.isNotEmpty(resultString)) {
-                decimal.setValue(BigDecimal.valueOf((decimalFormat.parse(resultString)).doubleValue()));
+                BigDecimal decimalValue;
+
+                // apply decimal places based on configuration
+                if (observationHeading != null && observationHeading.getDecimalPlaces() != null) {
+                    decimalValue = new BigDecimal(resultString).setScale(observationHeading.getDecimalPlaces().intValue(),
+                            BigDecimal.ROUND_HALF_UP);
+                } else {
+                    // otherwise default to 1
+                    decimalValue = new BigDecimal(resultString).setScale(1,
+                            BigDecimal.ROUND_HALF_UP);
+                }
+                decimal.setValue(decimalValue);
             }
-        } catch (ParseException nfe) {
-            throw new ParseException("Invalid value for observation", nfe.getErrorOffset());
+        } catch (NumberFormatException nfe) {
+            throw new NumberFormatException("Invalid value for observation");
         }
 
         return decimal;
