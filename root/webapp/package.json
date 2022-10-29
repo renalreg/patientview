@@ -32,7 +32,7 @@
     "grunt-war": "^0.5.1",
     "grunt-zip": "^0.10.0",
     "jshint-stylish": "~2.2.1",
-    "karma": "3.0.0",
+    "karma": "6.4.1",
     "karma-chrome-launcher": "2.2.0",
     "karma-jasmine": "^0.1.5",
     "karma-ng-html2js-preprocessor": "^1.0.0",
