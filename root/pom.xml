@@ -24,7 +24,7 @@
     </modules>
 
     <properties>
-        <jackson.version>2.11.1</jackson.version>
+        <jackson.version>2.18.11</jackson.version>
         <junit.version>4.12</junit.version>
         <lombok.version>1.16.18</lombok.version>
         <aspectj.version>1.9.6</aspectj.version>
