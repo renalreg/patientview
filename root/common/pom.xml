@@ -92,7 +92,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.11.3</version>
+            <version>1.23.2</version>
         </dependency>
         <!-- Hibernate 5.4, 5.3 and 5.2 -->
         <dependency>
